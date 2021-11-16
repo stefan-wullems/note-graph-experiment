@@ -5,7 +5,8 @@
     "start": "elm make src/Main.elm --output=./dist/elm.js && tauri dev"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.0.0-beta.10"
+    "@tauri-apps/cli": "^1.0.0-beta.10",
+    "elm-format": "^0.8.5"
   },
   "dependencies": {
     "@tauri-apps/api": "^1.0.0-beta.8"
