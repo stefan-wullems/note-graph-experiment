@@ -9,4 +9,4 @@ This application is the place where eventually my Zettelkasten, task management,
 
 - [ ] Task manager
   - [ ] Integration with Jira
-  - [ ] Pivot tracking   
+  - [ ] Pivot tracking
