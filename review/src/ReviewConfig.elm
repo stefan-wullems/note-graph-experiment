@@ -17,6 +17,14 @@ import NoMissingTypeAnnotation
 import NoMissingTypeAnnotationInLetIn
 import NoMissingTypeExpose
 import NoPrematureLetComputation
+import NoUnused.CustomTypeConstructorArgs
+import NoUnused.CustomTypeConstructors
+import NoUnused.Dependencies
+import NoUnused.Exports
+import NoUnused.Modules
+import NoUnused.Parameters
+import NoUnused.Patterns
+import NoUnused.Variables
 import Review.Rule exposing (Rule)
 
 
@@ -28,4 +36,12 @@ config =
     , NoMissingTypeAnnotationInLetIn.rule
     , NoMissingTypeExpose.rule
     , NoPrematureLetComputation.rule
+    , NoUnused.CustomTypeConstructorArgs.rule
+    , NoUnused.CustomTypeConstructors.rule []
+    , NoUnused.Dependencies.rule
+    , NoUnused.Exports.rule
+    , NoUnused.Modules.rule
+    , NoUnused.Parameters.rule
+    , NoUnused.Patterns.rule
+    , NoUnused.Variables.rule
     ]
