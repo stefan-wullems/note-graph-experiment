@@ -18,6 +18,7 @@ import NoMissingTypeAnnotationInLetIn
 import NoMissingTypeExpose
 import NoPrematureLetComputation
 import NoRecursiveUpdate
+import NoSimpleLetBody
 import NoUnused.CustomTypeConstructorArgs
 import NoUnused.CustomTypeConstructors
 import NoUnused.Dependencies
@@ -50,4 +51,5 @@ config =
     , Simplify.rule Simplify.defaults
     , NoRecursiveUpdate.rule
     , NoUselessSubscriptions.rule
+    , NoSimpleLetBody.rule
     ]
