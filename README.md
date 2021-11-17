@@ -9,9 +9,24 @@ This application is the place where eventually my Zettelkasten, task management,
 
 - [ ] Task manager
   - [ ] Integration with Jira
+  - [ ] Integration with Github projects
   - [ ] Pivot tracking
 
+- [ ] Zettelkasten editor
+  - [ ] Vim keybindings
+  - [ ] Linking to zettels
+  - [ ] Commands
+    - [ ] New zettel with current timestamp
+  - [ ] Workflow for amending a zettel
+
+- [ ] Contact list
+  - [ ] Invalidate contact info and prompt to update info only when needed
+
+- [ ] Kpi's
+  - [ ] Preventive health checkups
+
 - [ ] Dependently typed super set of Elm
+  - [ ] Dependently typed route codec
 
 # Learning goals 
 Hopefully this will be a long ongoing project, but at least as I start it now, there are a few things I want to try out.
