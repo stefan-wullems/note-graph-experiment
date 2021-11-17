@@ -13,6 +13,7 @@ when inside the directory containing this file.
 
 import NoExposingEverything
 import NoImportingEverything
+import NoLeftPizza
 import NoMissingTypeAnnotation
 import NoMissingTypeAnnotationInLetIn
 import NoMissingTypeExpose
@@ -52,4 +53,5 @@ config =
     , NoRecursiveUpdate.rule
     , NoUselessSubscriptions.rule
     , NoSimpleLetBody.rule
+    , NoLeftPizza.rule NoLeftPizza.Redundant
     ]
