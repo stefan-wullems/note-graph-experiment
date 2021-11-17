@@ -17,6 +17,7 @@ import NoMissingTypeAnnotation
 import NoMissingTypeAnnotationInLetIn
 import NoMissingTypeExpose
 import NoPrematureLetComputation
+import NoRecursiveUpdate
 import NoUnused.CustomTypeConstructorArgs
 import NoUnused.CustomTypeConstructors
 import NoUnused.Dependencies
@@ -25,6 +26,7 @@ import NoUnused.Modules
 import NoUnused.Parameters
 import NoUnused.Patterns
 import NoUnused.Variables
+import NoUselessSubscriptions
 import Review.Rule exposing (Rule)
 import Simplify
 
@@ -46,4 +48,6 @@ config =
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule
     , Simplify.rule Simplify.defaults
+    , NoRecursiveUpdate.rule
+    , NoUselessSubscriptions.rule
     ]
