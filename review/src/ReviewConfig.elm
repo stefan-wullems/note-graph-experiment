@@ -11,6 +11,7 @@ when inside the directory containing this file.
 
 -}
 
+import NoBooleanCase
 import NoExposingEverything
 import NoImportingEverything
 import NoLeftPizza
@@ -54,4 +55,5 @@ config =
     , NoUselessSubscriptions.rule
     , NoSimpleLetBody.rule
     , NoLeftPizza.rule NoLeftPizza.Redundant
+    , NoBooleanCase.rule
     ]
