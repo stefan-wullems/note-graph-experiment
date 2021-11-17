@@ -1,9 +1,6 @@
 jobs:
   frontend-elm-tests:
-    runs-on:
-      - linux
-      - self-hosted
-      - build-runner
+    runs-on: ubuntu-latest
     steps:
       - name: Cancel Previous Run
         uses: "styfle/cancel-workflow-action@0.6.0"
