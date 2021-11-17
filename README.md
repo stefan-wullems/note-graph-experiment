@@ -10,3 +10,17 @@ This application is the place where eventually my Zettelkasten, task management,
 - [ ] Task manager
   - [ ] Integration with Jira
   - [ ] Pivot tracking
+
+- [ ] Dependently typed super set of Elm
+
+# Learning goals 
+Hopefully this will be a long ongoing project, but at least as I start it now, there are a few things I want to try out.
+
+
+- Agile improvements. (Very small incremental improvements, smallest changes that add value)
+- TDD
+- DevOps (For this project as well as my entire productivity with this project)
+
+## Tech
+- Rust
+- Elm-ui
