@@ -1,0 +1,28 @@
+jobs:
+  frontend-elm-tests:
+    runs-on:
+      - linux
+      - self-hosted
+      - build-runner
+    steps:
+      - name: Cancel Previous Run
+        uses: "styfle/cancel-workflow-action@0.6.0"
+        with:
+          access_token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Checkout Code
+        uses: "actions/checkout@v2"
+        with:
+          ref: "${{ github.head_ref }}"
+      - name: Run Frontend Elm Tests
+        run: |
+          cd frontend-elm
+          npm install
+          npm run check
+
+name: Frontend Elm Tests
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  workflow_dispatch: {}
