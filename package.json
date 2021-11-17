@@ -2,7 +2,9 @@
   "name": "workspace",
   "scripts": {
     "tauri": "tauri",
-    "start": "elm make src/Main.elm --output=./dist/elm.js && tauri dev"
+    "start": "elm make src/Main.elm --output=./dist/elm.js && tauri dev",
+    "review:watch": "elm-review --watch",
+    "review:fix": "elm-review --fix"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.0.0-beta.10",
