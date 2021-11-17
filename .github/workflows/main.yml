@@ -12,7 +12,6 @@ jobs:
           ref: "${{ github.head_ref }}"
       - name: Run Frontend Elm Tests
         run: |
-          cd frontend-elm
           npm install
           npm run check
 
