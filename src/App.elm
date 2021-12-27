@@ -76,10 +76,10 @@ viewZettelkasten focusId zettelkasten =
         ]
 
 
-main : Program () () ()
+main : Program () String String
 main =
     Browser.sandbox
-        { init = ()
-        , update = \() _ -> ()
-        , view = \_ -> Element.layout [] (viewZettelkasten "13" testZettelkasten)
+        { init = "13"
+        , update = \model _ -> model
+        , view = \focusId -> Element.layout [] (viewZettelkasten focusId testZettelkasten)
         }
