@@ -2,6 +2,8 @@ module App exposing (main)
 
 import Browser
 import Element exposing (Element)
+import Element.Font as Font
+import Set
 import Zettelkasten exposing (Zettelkasten)
 
 
@@ -40,7 +42,38 @@ testZettelkasten =
 
 viewZettelkasten : String -> Zettelkasten String String -> Element msg
 viewZettelkasten focusId zettelkasten =
-    Element.text "Hello world"
+    let
+        focus : Maybe String
+        focus =
+            Zettelkasten.get focusId zettelkasten
+
+        focusBacklinks =
+            Zettelkasten.getBacklinks focusId zettelkasten
+                |> Set.toList
+
+        focusLinks =
+            Zettelkasten.getLinks focusId zettelkasten
+                |> Set.toList
+    in
+    Element.column [ Element.width Element.fill, Element.height Element.fill ]
+        [ Element.row [ Element.centerX, Element.centerY, Element.height Element.fill, Element.width Element.fill ]
+            (List.filterMap
+                (\id ->
+                    Zettelkasten.get id zettelkasten
+                        |> Maybe.map (Element.el [ Element.centerX, Element.centerY, Element.width Element.fill, Font.center ] << Element.text)
+                )
+                focusBacklinks
+            )
+        , Element.el [ Element.centerX, Element.centerY ] (Element.text (Maybe.withDefault "bla" focus))
+        , Element.row [ Element.centerX, Element.centerY, Element.height Element.fill, Element.width Element.fill ]
+            (List.filterMap
+                (\id ->
+                    Zettelkasten.get id zettelkasten
+                        |> Maybe.map (Element.el [ Element.centerX, Element.centerY, Element.width Element.fill, Font.center ] << Element.text)
+                )
+                focusLinks
+            )
+        ]
 
 
 main : Program () () ()
