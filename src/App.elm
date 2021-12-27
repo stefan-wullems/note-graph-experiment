@@ -5,6 +5,7 @@ import Element exposing (Element)
 import Element.Background as Background
 import Element.Events as Events
 import Element.Font as Font
+import Element.Input exposing (focusedOnLoad)
 import Set
 import Zettelkasten exposing (Zettelkasten)
 
@@ -46,14 +47,21 @@ type Message
     = SetFocus String
 
 
-viewZettel : Zettelkasten String String -> String -> Element Message
-viewZettel zettelkasten id =
+viewZettel : List String -> Zettelkasten String String -> String -> Element Message
+viewZettel thread zettelkasten id =
     Element.el
         [ Element.centerX
         , Element.centerY
         , Element.width Element.fill
         , Font.center
-        , Events.onFocus (SetFocus id)
+        , Events.onClick (SetFocus id)
+        , if List.member id thread then
+            Font.color (Element.rgb255 140 140 255)
+
+          else
+            Element.mouseOver
+                [ Font.color (Element.rgb255 255 255 0)
+                ]
         ]
         (Element.text
             (Zettelkasten.get id zettelkasten
@@ -62,15 +70,15 @@ viewZettel zettelkasten id =
         )
 
 
-viewZettelRow : List String -> Zettelkasten String String -> Element Message
-viewZettelRow ids zettelkasten =
+viewZettelRow : List String -> List String -> Zettelkasten String String -> Element Message
+viewZettelRow thread ids zettelkasten =
     Element.row
         [ Element.centerX
         , Element.centerY
         , Element.height Element.fill
         , Element.width Element.fill
         ]
-        (List.map (viewZettel zettelkasten) ids)
+        (List.map (viewZettel thread zettelkasten) ids)
 
 
 viewZettelkasten : String -> Zettelkasten String String -> Element Message
@@ -90,9 +98,9 @@ viewZettelkasten focusId zettelkasten =
         [ Element.width Element.fill
         , Element.height Element.fill
         ]
-        [ viewZettelRow focusBacklinks zettelkasten
-        , viewZettel zettelkasten focusId
-        , viewZettelRow focusLinks zettelkasten
+        [ viewZettelRow [ focusId ] focusBacklinks zettelkasten
+        , viewZettel [ focusId ] zettelkasten focusId
+        , viewZettelRow [ focusId ] focusLinks zettelkasten
         ]
 
 
