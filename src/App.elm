@@ -31,13 +31,25 @@ testZettelkasten =
         |> Zettelkasten.insert "8" "Topic links"
         |> Zettelkasten.link "7" "8"
         |> Zettelkasten.insert "12" "Topic links in practice used for grouping"
-        |> Zettelkasten.link "7" "12"
+        |> Zettelkasten.link "8" "12"
         |> Zettelkasten.insert "13" "Differences between topic links and indices for grouping related notes"
         |> Zettelkasten.link "12" "13"
         |> Zettelkasten.insert "15" "Manually grouping using indices becomes unwieldy"
         |> Zettelkasten.link "13" "15"
         |> Zettelkasten.insert "14" "Topic links over indices reduces choices during surfing"
         |> Zettelkasten.link "13" "14"
+
+
+viewZettelRow : List String -> Zettelkasten String String -> Element msg
+viewZettelRow ids zettelkasten =
+    Element.row [ Element.centerX, Element.centerY, Element.height Element.fill, Element.width Element.fill ]
+        (List.filterMap
+            (\id ->
+                Zettelkasten.get id zettelkasten
+                    |> Maybe.map (Element.el [ Element.centerX, Element.centerY, Element.width Element.fill, Font.center ] << Element.text)
+            )
+            ids
+        )
 
 
 viewZettelkasten : String -> Zettelkasten String String -> Element msg
@@ -47,32 +59,20 @@ viewZettelkasten focusId zettelkasten =
         focus =
             Zettelkasten.get focusId zettelkasten
 
+        focusBacklinks : List String
         focusBacklinks =
             Zettelkasten.getBacklinks focusId zettelkasten
                 |> Set.toList
 
+        focusLinks : List String
         focusLinks =
             Zettelkasten.getLinks focusId zettelkasten
                 |> Set.toList
     in
     Element.column [ Element.width Element.fill, Element.height Element.fill ]
-        [ Element.row [ Element.centerX, Element.centerY, Element.height Element.fill, Element.width Element.fill ]
-            (List.filterMap
-                (\id ->
-                    Zettelkasten.get id zettelkasten
-                        |> Maybe.map (Element.el [ Element.centerX, Element.centerY, Element.width Element.fill, Font.center ] << Element.text)
-                )
-                focusBacklinks
-            )
+        [ viewZettelRow focusBacklinks zettelkasten
         , Element.el [ Element.centerX, Element.centerY ] (Element.text (Maybe.withDefault "bla" focus))
-        , Element.row [ Element.centerX, Element.centerY, Element.height Element.fill, Element.width Element.fill ]
-            (List.filterMap
-                (\id ->
-                    Zettelkasten.get id zettelkasten
-                        |> Maybe.map (Element.el [ Element.centerX, Element.centerY, Element.width Element.fill, Font.center ] << Element.text)
-                )
-                focusLinks
-            )
+        , viewZettelRow focusLinks zettelkasten
         ]
 
 
@@ -81,5 +81,5 @@ main =
     Browser.sandbox
         { init = ()
         , update = \() _ -> ()
-        , view = \_ -> Element.layout [] (viewZettelkasten "1" testZettelkasten)
+        , view = \_ -> Element.layout [] (viewZettelkasten "13" testZettelkasten)
         }
