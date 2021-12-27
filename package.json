@@ -1,21 +1,20 @@
 {
   "name": "workspace",
   "scripts": {
-    "tauri": "tauri",
     "elm:build": "elm make src/Main.elm --output=./dist/elm.js",
     "elm:review": "elm-review",
-    "elm:review:watch": "elm-review --watch",
-    "elm:review:fix": "elm-review --fix",
-    "start": "npm run elm:build && tauri dev",
-    "check": "npm run elm:build && npm run elm:review"
+    "elm:test": "elm-test",
+    "start": "vite -c ./vite.config.js",
+    "check": "npm run elm:build && npm run elm:review && npm run elm:test"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.0.0-beta.10",
     "elm-format": "^0.8.5",
-    "elm-review": "^2.6.1"
+    "elm-review": "^2.6.1",
+    "elm-test": "^0.19.1-revision7",
+    "vite": "^2.7.7",
+    "vite-plugin-elm": "^2.5.1"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.0.0-beta.8",
     "elm": "^0.19.1-5"
   }
 }
