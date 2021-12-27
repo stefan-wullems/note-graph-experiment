@@ -54,6 +54,5 @@ config =
     , NoRecursiveUpdate.rule
     , NoUselessSubscriptions.rule
     , NoSimpleLetBody.rule
-    , NoLeftPizza.rule NoLeftPizza.Redundant
     , NoBooleanCase.rule
     ]
