@@ -5,7 +5,6 @@ import Element exposing (Element)
 import Element.Background as Background
 import Element.Events as Events
 import Element.Font as Font
-import Element.Input exposing (focusedOnLoad)
 import Set
 import Zettelkasten exposing (Zettelkasten)
 
@@ -47,15 +46,39 @@ type Message
     = SetFocus String
 
 
-viewZettel : List String -> Zettelkasten String String -> String -> Element Message
-viewZettel thread zettelkasten id =
+type alias Thread =
+    ( Maybe String, String, Maybe String )
+
+
+type alias Model =
+    ( Thread, Zettelkasten String String )
+
+
+update : Message -> Model -> Model
+update msg ( thread, zettelkasten ) =
+    case msg of
+        SetFocus id ->
+            ( ( Zettelkasten.getBacklinks id zettelkasten
+                    |> Set.toList
+                    |> List.head
+              , id
+              , Zettelkasten.getLinks id zettelkasten
+                    |> Set.toList
+                    |> List.head
+              )
+            , zettelkasten
+            )
+
+
+viewZettel : Bool -> Zettelkasten String String -> String -> Element Message
+viewZettel inThread zettelkasten id =
     Element.el
         [ Element.centerX
         , Element.centerY
         , Element.width Element.fill
         , Font.center
         , Events.onClick (SetFocus id)
-        , if List.member id thread then
+        , if inThread then
             Font.color (Element.rgb255 140 140 255)
 
           else
@@ -70,19 +93,19 @@ viewZettel thread zettelkasten id =
         )
 
 
-viewZettelRow : List String -> List String -> Zettelkasten String String -> Element Message
-viewZettelRow thread ids zettelkasten =
+viewZettelRow : List String -> Zettelkasten String String -> String -> Element Message
+viewZettelRow ids zettelkasten threadId =
     Element.row
         [ Element.centerX
         , Element.centerY
         , Element.height Element.fill
         , Element.width Element.fill
         ]
-        (List.map (viewZettel thread zettelkasten) ids)
+        (List.map (\id -> viewZettel (threadId == id) zettelkasten id) ids)
 
 
-viewZettelkasten : String -> Zettelkasten String String -> Element Message
-viewZettelkasten focusId zettelkasten =
+viewZettelkasten : Thread -> Zettelkasten String String -> Element Message
+viewZettelkasten ( focusedParentId, focusId, focusedChildId ) zettelkasten =
     let
         focusBacklinks : List String
         focusBacklinks =
@@ -98,22 +121,38 @@ viewZettelkasten focusId zettelkasten =
         [ Element.width Element.fill
         , Element.height Element.fill
         ]
-        [ viewZettelRow [ focusId ] focusBacklinks zettelkasten
-        , viewZettel [ focusId ] zettelkasten focusId
-        , viewZettelRow [ focusId ] focusLinks zettelkasten
+        [ focusedParentId
+            |> Maybe.map (viewZettelRow focusBacklinks zettelkasten)
+            |> Maybe.withDefault
+                (Element.el
+                    [ Element.width Element.fill
+                    , Element.height Element.fill
+                    ]
+                    Element.none
+                )
+        , viewZettel True zettelkasten focusId
+        , focusedChildId
+            |> Maybe.map (viewZettelRow focusLinks zettelkasten)
+            |> Maybe.withDefault
+                (Element.el
+                    [ Element.width Element.fill
+                    , Element.height Element.fill
+                    ]
+                    Element.none
+                )
         ]
 
 
-main : Program () String Message
+main : Program () Model Message
 main =
     Browser.sandbox
-        { init = "13"
-        , update = \(SetFocus focus) _ -> focus
+        { init = ( ( Just "12", "13", Just "14" ), testZettelkasten )
+        , update = update
         , view =
-            \focusId ->
+            \( thread, zettelkasten ) ->
                 Element.layout
                     [ Background.color (Element.rgb255 20 20 20)
                     , Font.color (Element.rgb255 200 200 200)
                     ]
-                    (viewZettelkasten focusId testZettelkasten)
+                    (viewZettelkasten thread zettelkasten)
         }
