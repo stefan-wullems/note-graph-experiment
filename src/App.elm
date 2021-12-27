@@ -1,7 +1,9 @@
-module App exposing (main)
+module App exposing (Message, main)
 
 import Browser
 import Element exposing (Element)
+import Element.Background as Background
+import Element.Events as Events
 import Element.Font as Font
 import Set
 import Zettelkasten exposing (Zettelkasten)
@@ -40,25 +42,40 @@ testZettelkasten =
         |> Zettelkasten.link "13" "14"
 
 
-viewZettelRow : List String -> Zettelkasten String String -> Element msg
-viewZettelRow ids zettelkasten =
-    Element.row [ Element.centerX, Element.centerY, Element.height Element.fill, Element.width Element.fill ]
-        (List.filterMap
-            (\id ->
-                Zettelkasten.get id zettelkasten
-                    |> Maybe.map (Element.el [ Element.centerX, Element.centerY, Element.width Element.fill, Font.center ] << Element.text)
+type Message
+    = SetFocus String
+
+
+viewZettel : Zettelkasten String String -> String -> Element Message
+viewZettel zettelkasten id =
+    Element.el
+        [ Element.centerX
+        , Element.centerY
+        , Element.width Element.fill
+        , Font.center
+        , Events.onFocus (SetFocus id)
+        ]
+        (Element.text
+            (Zettelkasten.get id zettelkasten
+                |> Maybe.withDefault "ERROR"
             )
-            ids
         )
 
 
-viewZettelkasten : String -> Zettelkasten String String -> Element msg
+viewZettelRow : List String -> Zettelkasten String String -> Element Message
+viewZettelRow ids zettelkasten =
+    Element.row
+        [ Element.centerX
+        , Element.centerY
+        , Element.height Element.fill
+        , Element.width Element.fill
+        ]
+        (List.map (viewZettel zettelkasten) ids)
+
+
+viewZettelkasten : String -> Zettelkasten String String -> Element Message
 viewZettelkasten focusId zettelkasten =
     let
-        focus : Maybe String
-        focus =
-            Zettelkasten.get focusId zettelkasten
-
         focusBacklinks : List String
         focusBacklinks =
             Zettelkasten.getBacklinks focusId zettelkasten
@@ -69,17 +86,26 @@ viewZettelkasten focusId zettelkasten =
             Zettelkasten.getLinks focusId zettelkasten
                 |> Set.toList
     in
-    Element.column [ Element.width Element.fill, Element.height Element.fill ]
+    Element.column
+        [ Element.width Element.fill
+        , Element.height Element.fill
+        ]
         [ viewZettelRow focusBacklinks zettelkasten
-        , Element.el [ Element.centerX, Element.centerY ] (Element.text (Maybe.withDefault "bla" focus))
+        , viewZettel zettelkasten focusId
         , viewZettelRow focusLinks zettelkasten
         ]
 
 
-main : Program () String String
+main : Program () String Message
 main =
     Browser.sandbox
         { init = "13"
-        , update = \model _ -> model
-        , view = \focusId -> Element.layout [] (viewZettelkasten focusId testZettelkasten)
+        , update = \(SetFocus focus) _ -> focus
+        , view =
+            \focusId ->
+                Element.layout
+                    [ Background.color (Element.rgb255 20 20 20)
+                    , Font.color (Element.rgb255 200 200 200)
+                    ]
+                    (viewZettelkasten focusId testZettelkasten)
         }
