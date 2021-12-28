@@ -1,4 +1,4 @@
-module App exposing (Message, main)
+module App exposing (Message, Model, Thread, main)
 
 import Browser
 import Element exposing (Element)
@@ -11,6 +11,7 @@ import Set
 import Zettelkasten exposing (Zettelkasten)
 
 
+testZettelkasten : Zettelkasten String String
 testZettelkasten =
     Zettelkasten.empty
         |> Zettelkasten.insert "0" "Zettelkasten"
@@ -42,6 +43,9 @@ testZettelkasten =
         |> Zettelkasten.link "13" "15"
         |> Zettelkasten.insert "14" "Topic links over indices reduces choices during surfing"
         |> Zettelkasten.link "13" "14"
+        |> Zettelkasten.link "3" "14"
+        |> Zettelkasten.link "2" "8"
+        |> Zettelkasten.link "6" "15"
 
 
 type ScrollDirectionX
@@ -151,6 +155,7 @@ viewZettelkasten thread zettelkasten =
             Zettelkasten.getLinks thread.center zettelkasten
                 |> Set.toList
 
+        onScrollX : DirectionY -> List String -> String -> ScrollDirectionX -> Maybe Message
         onScrollX row links focusId dirX =
             Maybe.map (ThreadThing row) <|
                 case dirX of
@@ -162,42 +167,32 @@ viewZettelkasten thread zettelkasten =
                         List.dropWhile (\id -> id /= focusId) links
                             |> List.tail
                             |> Maybe.andThen List.head
+
+        viewRow : DirectionY -> List String -> Maybe String -> Element Message
+        viewRow row links focusId =
+            focusId
+                |> Maybe.map
+                    (\focusId_ ->
+                        viewZettelRow (onScrollX row links focusId_)
+                            links
+                            focusId_
+                            zettelkasten
+                    )
+                |> Maybe.withDefault
+                    (Element.el
+                        [ Element.width Element.fill
+                        , Element.height Element.fill
+                        ]
+                        Element.none
+                    )
     in
     Element.column
         [ Element.width Element.fill
         , Element.height Element.fill
         ]
-        [ thread.top
-            |> Maybe.map
-                (\parentId ->
-                    viewZettelRow (onScrollX Top focusBacklinks parentId)
-                        focusBacklinks
-                        parentId
-                        zettelkasten
-                )
-            |> Maybe.withDefault
-                (Element.el
-                    [ Element.width Element.fill
-                    , Element.height Element.fill
-                    ]
-                    Element.none
-                )
+        [ viewRow Top focusBacklinks thread.top
         , viewZettel True zettelkasten thread.center
-        , thread.bottom
-            |> Maybe.map
-                (\childId ->
-                    viewZettelRow (onScrollX Bottom focusLinks childId)
-                        focusLinks
-                        childId
-                        zettelkasten
-                )
-            |> Maybe.withDefault
-                (Element.el
-                    [ Element.width Element.fill
-                    , Element.height Element.fill
-                    ]
-                    Element.none
-                )
+        , viewRow Bottom focusLinks thread.bottom
         ]
 
 
