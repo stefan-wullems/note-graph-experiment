@@ -6,6 +6,8 @@ import Element.Background as Background
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
+import Html
+import Html.Attributes exposing (class)
 import List.Extra as List
 import Set
 import Zettelkasten exposing (Zettelkasten)
@@ -61,10 +63,6 @@ type DirectionY
 type Message
     = SetFocus String
     | ThreadThing DirectionY String
-
-
-
--- | ScrollThreadBottom ScrollDirection
 
 
 type alias Thread =
@@ -203,9 +201,13 @@ main =
         , update = update
         , view =
             \( thread, zettelkasten ) ->
-                Element.layout
-                    [ Background.color (Element.rgb255 20 20 20)
-                    , Font.color (Element.rgb255 200 200 200)
+                Html.div [ class "text-3xl font-bold underline" ]
+                    [ Html.text "bla"
+
+                    -- , Element.layout
+                    --     [ Background.color (Element.rgb255 20 20 20)
+                    --     , Font.color (Element.rgb255 200 200 200)
+                    --     ]
+                    --     (viewZettelkasten thread zettelkasten)
                     ]
-                    (viewZettelkasten thread zettelkasten)
         }
