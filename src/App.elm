@@ -1,13 +1,9 @@
 module App exposing (Message, Model, Thread, main)
 
 import Browser
-import Element exposing (Element)
-import Element.Background as Background
-import Element.Events as Events
-import Element.Font as Font
-import Element.Input as Input
-import Html
-import Html.Attributes exposing (class)
+import Html exposing (Html)
+import Html.Attributes as Attribute exposing (class)
+import Html.Events as Events
 import List.Extra as List
 import Set
 import Zettelkasten exposing (Zettelkasten)
@@ -101,46 +97,42 @@ update msg ( thread, zettelkasten ) =
             )
 
 
-viewZettel : Bool -> Zettelkasten String String -> String -> Element Message
+viewZettel : Bool -> Zettelkasten String String -> String -> Html Message
 viewZettel inThread zettelkasten id =
-    Element.el
-        [ Element.centerX
-        , Element.centerY
-        , Element.width Element.fill
-        , Font.center
-        , Events.onClick (SetFocus id)
-        , if inThread then
-            Font.color (Element.rgb255 140 140 255)
-
-          else
-            Element.mouseOver
-                [ Font.color (Element.rgb255 255 255 0)
-                ]
-        ]
-        (Element.text
+    Html.li [ class "snap-center w-96 text-center", Attribute.classList [ ( "text-sky-400", inThread ) ], Events.onClick (SetFocus id) ]
+        [ Html.text
             (Zettelkasten.get id zettelkasten
                 |> Maybe.withDefault "ERROR"
             )
-        )
-
-
-viewZettelRow : (ScrollDirectionX -> Maybe Message) -> List String -> String -> Zettelkasten String String -> Element Message
-viewZettelRow onScrollX ids focusId zettelkasten =
-    Element.row
-        [ Element.centerX
-        , Element.centerY
-        , Element.height Element.fill
-        , Element.width Element.fill
         ]
-        (List.concat
-            [ [ Input.button [ Font.alignRight, Element.padding 50 ] { onPress = onScrollX Left, label = Element.text "<" } ]
-            , List.map (\id -> viewZettel (id == focusId) zettelkasten id) ids
-            , [ Input.button [ Font.alignLeft, Element.padding 50 ] { onPress = onScrollX Right, label = Element.text ">" } ]
+
+
+viewZettelRow : (ScrollDirectionX -> Maybe Message) -> List String -> String -> Zettelkasten String String -> Html Message
+viewZettelRow onScrollX ids focusId zettelkasten =
+    Html.div
+        [ Attribute.class "flex flex-row grow" ]
+        [ Html.button
+            [ Attribute.class "w-96"
+            , onScrollX Left
+                |> Maybe.map Events.onClick
+                |> Maybe.withDefault (Attribute.disabled True)
             ]
-        )
+            [ Html.text "<" ]
+        , Html.ul
+            [ Attribute.class "snap-x grow overflow-x-auto grid grid-flow-col"
+            ]
+            (List.map (\id -> viewZettel (id == focusId) zettelkasten id) (List.concat [ ids, ids, ids ]))
+        , Html.button
+            [ Attribute.class "w-96"
+            , onScrollX Right
+                |> Maybe.map Events.onClick
+                |> Maybe.withDefault (Attribute.disabled True)
+            ]
+            [ Html.text ">" ]
+        ]
 
 
-viewZettelkasten : Thread -> Zettelkasten String String -> Element Message
+viewZettelkasten : Thread -> Zettelkasten String String -> Html Message
 viewZettelkasten thread zettelkasten =
     let
         focusBacklinks : List String
@@ -166,7 +158,7 @@ viewZettelkasten thread zettelkasten =
                             |> List.tail
                             |> Maybe.andThen List.head
 
-        viewRow : DirectionY -> List String -> Maybe String -> Element Message
+        viewRow : DirectionY -> List String -> Maybe String -> Html Message
         viewRow row links focusId =
             focusId
                 |> Maybe.map
@@ -176,20 +168,15 @@ viewZettelkasten thread zettelkasten =
                             focusId_
                             zettelkasten
                     )
-                |> Maybe.withDefault
-                    (Element.el
-                        [ Element.width Element.fill
-                        , Element.height Element.fill
-                        ]
-                        Element.none
-                    )
+                |> Maybe.withDefault (Html.text "")
     in
-    Element.column
-        [ Element.width Element.fill
-        , Element.height Element.fill
-        ]
+    Html.ul
+        [ Attribute.class "flex flex-col justify-items-center gap-5 bg-zinc-700 h-full text-zinc-100" ]
         [ viewRow Top focusBacklinks thread.top
-        , viewZettel True zettelkasten thread.center
+        , Html.ul
+            [ Attribute.class "snap-x grow overflow-x-auto grid grid-flow-col"
+            ]
+            [ viewZettel True zettelkasten thread.center ]
         , viewRow Bottom focusLinks thread.bottom
         ]
 
@@ -201,13 +188,5 @@ main =
         , update = update
         , view =
             \( thread, zettelkasten ) ->
-                Html.div [ class "text-3xl font-bold underline" ]
-                    [ Html.text "bla"
-
-                    -- , Element.layout
-                    --     [ Background.color (Element.rgb255 20 20 20)
-                    --     , Font.color (Element.rgb255 200 200 200)
-                    --     ]
-                    --     (viewZettelkasten thread zettelkasten)
-                    ]
+                viewZettelkasten thread zettelkasten
         }
