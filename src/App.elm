@@ -5,6 +5,8 @@ import Element exposing (Element)
 import Element.Background as Background
 import Element.Events as Events
 import Element.Font as Font
+import Element.Input as Input
+import List.Extra as List
 import Set
 import Zettelkasten exposing (Zettelkasten)
 
@@ -42,12 +44,27 @@ testZettelkasten =
         |> Zettelkasten.link "13" "14"
 
 
+type ScrollDirectionX
+    = Left
+    | Right
+
+
+type DirectionY
+    = Top
+    | Bottom
+
+
 type Message
     = SetFocus String
+    | ThreadThing DirectionY String
+
+
+
+-- | ScrollThreadBottom ScrollDirection
 
 
 type alias Thread =
-    ( Maybe String, String, Maybe String )
+    { top : Maybe String, center : String, bottom : Maybe String }
 
 
 type alias Model =
@@ -58,14 +75,26 @@ update : Message -> Model -> Model
 update msg ( thread, zettelkasten ) =
     case msg of
         SetFocus id ->
-            ( ( Zettelkasten.getBacklinks id zettelkasten
-                    |> Set.toList
-                    |> List.head
-              , id
-              , Zettelkasten.getLinks id zettelkasten
-                    |> Set.toList
-                    |> List.head
-              )
+            ( { top =
+                    Zettelkasten.getBacklinks id zettelkasten
+                        |> Set.toList
+                        |> List.head
+              , center = id
+              , bottom =
+                    Zettelkasten.getLinks id zettelkasten
+                        |> Set.toList
+                        |> List.head
+              }
+            , zettelkasten
+            )
+
+        ThreadThing dirY id ->
+            ( case dirY of
+                Top ->
+                    { thread | top = Just id }
+
+                Bottom ->
+                    { thread | bottom = Just id }
             , zettelkasten
             )
 
@@ -93,36 +122,59 @@ viewZettel inThread zettelkasten id =
         )
 
 
-viewZettelRow : List String -> Zettelkasten String String -> String -> Element Message
-viewZettelRow ids zettelkasten threadId =
+viewZettelRow : (ScrollDirectionX -> Maybe Message) -> List String -> String -> Zettelkasten String String -> Element Message
+viewZettelRow onScrollX ids focusId zettelkasten =
     Element.row
         [ Element.centerX
         , Element.centerY
         , Element.height Element.fill
         , Element.width Element.fill
         ]
-        (List.map (\id -> viewZettel (threadId == id) zettelkasten id) ids)
+        (List.concat
+            [ [ Input.button [ Font.alignRight, Element.padding 50 ] { onPress = onScrollX Left, label = Element.text "<" } ]
+            , List.map (\id -> viewZettel (id == focusId) zettelkasten id) ids
+            , [ Input.button [ Font.alignLeft, Element.padding 50 ] { onPress = onScrollX Right, label = Element.text ">" } ]
+            ]
+        )
 
 
 viewZettelkasten : Thread -> Zettelkasten String String -> Element Message
-viewZettelkasten ( focusedParentId, focusId, focusedChildId ) zettelkasten =
+viewZettelkasten thread zettelkasten =
     let
         focusBacklinks : List String
         focusBacklinks =
-            Zettelkasten.getBacklinks focusId zettelkasten
+            Zettelkasten.getBacklinks thread.center zettelkasten
                 |> Set.toList
 
         focusLinks : List String
         focusLinks =
-            Zettelkasten.getLinks focusId zettelkasten
+            Zettelkasten.getLinks thread.center zettelkasten
                 |> Set.toList
+
+        onScrollX row links focusId dirX =
+            Maybe.map (ThreadThing row) <|
+                case dirX of
+                    Left ->
+                        List.takeWhile (\id -> id /= focusId) links
+                            |> List.last
+
+                    Right ->
+                        List.dropWhile (\id -> id /= focusId) links
+                            |> List.tail
+                            |> Maybe.andThen List.head
     in
     Element.column
         [ Element.width Element.fill
         , Element.height Element.fill
         ]
-        [ focusedParentId
-            |> Maybe.map (viewZettelRow focusBacklinks zettelkasten)
+        [ thread.top
+            |> Maybe.map
+                (\parentId ->
+                    viewZettelRow (onScrollX Top focusBacklinks parentId)
+                        focusBacklinks
+                        parentId
+                        zettelkasten
+                )
             |> Maybe.withDefault
                 (Element.el
                     [ Element.width Element.fill
@@ -130,9 +182,15 @@ viewZettelkasten ( focusedParentId, focusId, focusedChildId ) zettelkasten =
                     ]
                     Element.none
                 )
-        , viewZettel True zettelkasten focusId
-        , focusedChildId
-            |> Maybe.map (viewZettelRow focusLinks zettelkasten)
+        , viewZettel True zettelkasten thread.center
+        , thread.bottom
+            |> Maybe.map
+                (\childId ->
+                    viewZettelRow (onScrollX Bottom focusLinks childId)
+                        focusLinks
+                        childId
+                        zettelkasten
+                )
             |> Maybe.withDefault
                 (Element.el
                     [ Element.width Element.fill
@@ -146,7 +204,7 @@ viewZettelkasten ( focusedParentId, focusId, focusedChildId ) zettelkasten =
 main : Program () Model Message
 main =
     Browser.sandbox
-        { init = ( ( Just "12", "13", Just "14" ), testZettelkasten )
+        { init = ( { top = Just "12", center = "13", bottom = Just "14" }, testZettelkasten )
         , update = update
         , view =
             \( thread, zettelkasten ) ->
