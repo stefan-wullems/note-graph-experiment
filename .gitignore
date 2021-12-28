@@ -1,4 +1,4 @@
 /node_modules
-/dist/elm.js
+/dist/**
 /elm-stuff
 /review/elm-stuff
