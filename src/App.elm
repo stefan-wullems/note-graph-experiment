@@ -99,11 +99,15 @@ update msg ( thread, zettelkasten ) =
 
 viewZettel : Bool -> Zettelkasten String String -> String -> Html Message
 viewZettel inThread zettelkasten id =
-    Html.li [ class "snap-center w-96 text-center snap-always", Attribute.classList [ ( "text-sky-500", inThread ) ], Events.onClick (SetFocus id) ]
-        [ Html.text
-            (Zettelkasten.get id zettelkasten
-                |> Maybe.withDefault "ERROR"
-            )
+    Html.li [ class "snap-center w-96 text-center shrink-0 snap-always bg-orange-50 rounded-lg z-10", Attribute.classList [ ( "text-sky-500", inThread ) ], Events.onClick (SetFocus id) ]
+        [ Html.div [ Attribute.class "px-3 py-4 sm:px-6" ]
+            [ Html.h3 [ Attribute.class "text-lg leading-6 text-gray-900" ]
+                [ Html.text
+                    (Zettelkasten.get id zettelkasten
+                        |> Maybe.withDefault "ERROR"
+                    )
+                ]
+            ]
         ]
 
 
@@ -119,12 +123,12 @@ viewZettelRow onScrollX ids focusId zettelkasten =
             ]
             [ Html.text "<" ]
         , Html.ul
-            [ Attribute.class "snap-x snap-mandatory grow overflow-x-auto grid grid-flow-col"
+            [ Attribute.class "snap-x snap-mandatory grow overflow-x-auto flex flex-row gap-24"
             ]
             (List.concat
-                [ [ Html.li [ Attribute.class "snap-center w-96" ] [] ]
-                , List.map (\id -> viewZettel (id == focusId) zettelkasten id) (List.concat [ ids, ids, ids ])
-                , [ Html.li [ Attribute.class "snap-center w-96" ] [] ]
+                [ [ Html.li [ Attribute.class "snap-center w-1/2 -mr-72 shrink-0" ] [] ]
+                , List.map (\id -> viewZettel (id == focusId) zettelkasten id) ids
+                , [ Html.li [ Attribute.class "snap-center w-1/2 -ml-72 shrink-0" ] [] ]
                 ]
             )
         , Html.button
@@ -176,12 +180,15 @@ viewZettelkasten thread zettelkasten =
                 |> Maybe.withDefault (Html.text "")
     in
     Html.ul
-        [ Attribute.class "flex flex-col justify-items-center gap-5 bg-zinc-700 h-full text-zinc-100 " ]
+        [ Attribute.class "flex flex-col justify-items-center gap-24 bg-zinc-700 h-full " ]
         [ viewRow Top focusBacklinks thread.top
         , Html.ul
-            [ Attribute.class "snap-x grow overflow-x-auto grid grid-flow-col"
+            [ Attribute.class "snap-x grow flex"
             ]
-            [ viewZettel True zettelkasten thread.center ]
+            [ Html.li [ Attribute.class "grow" ] []
+            , viewZettel True zettelkasten thread.center
+            , Html.li [ Attribute.class "grow" ] []
+            ]
         , viewRow Bottom focusLinks thread.bottom
         ]
 
