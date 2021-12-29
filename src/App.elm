@@ -2,10 +2,11 @@ module App exposing (Message, Model, Thread, main)
 
 import Browser
 import Html exposing (Html)
-import Html.Attributes as Attribute exposing (class)
+import Html.Attributes as Attributes
 import Html.Events as Events
 import List.Extra as List
 import Set
+import UI.SnapList as SnapList
 import Zettelkasten exposing (Zettelkasten)
 
 
@@ -97,11 +98,25 @@ update msg ( thread, zettelkasten ) =
             )
 
 
-viewZettel : Bool -> Zettelkasten String String -> String -> Html Message
-viewZettel inThread zettelkasten id =
-    Html.li [ class "snap-center w-96 text-center shrink-0 snap-always bg-orange-50 rounded-lg z-10", Attribute.classList [ ( "text-sky-500", inThread ) ], Events.onClick (SetFocus id) ]
-        [ Html.div [ Attribute.class "px-3 py-4 sm:px-6" ]
-            [ Html.h3 [ Attribute.class "text-lg leading-6 text-gray-900" ]
+
+-- List: snap-x snap-mandatory
+-- Item: snap-center snap-always
+-- (List.concat
+--     [ [ Html.li [ Attributes.class "snap-center w-1/2 -mr-72 shrink-0" ] [] ]
+--     , List.map (\id -> viewZettel (id == focusId) zettelkasten id) ids
+--     , [ Html.li [ Attributes.class "snap-center w-1/2 -ml-72 shrink-0" ] [] ]
+--     ]
+-- )
+
+
+viewZettel : Zettelkasten String String -> String -> Html Message
+viewZettel zettelkasten id =
+    Html.div
+        [ Attributes.class "w-96 text-center shrink-0 bg-orange-50 rounded-lg z-10"
+        , Events.onClick (SetFocus id)
+        ]
+        [ Html.div [ Attributes.class "px-3 py-4 sm:px-6" ]
+            [ Html.h3 [ Attributes.class "text-lg leading-6 text-gray-900" ]
                 [ Html.text
                     (Zettelkasten.get id zettelkasten
                         |> Maybe.withDefault "ERROR"
@@ -111,33 +126,18 @@ viewZettel inThread zettelkasten id =
         ]
 
 
-viewZettelRow : (ScrollDirectionX -> Maybe Message) -> List String -> String -> Zettelkasten String String -> Html Message
-viewZettelRow onScrollX ids focusId zettelkasten =
+{-| SnapList is currently uncontrolled.
+We only need to make it controlled when we want to support initialization with specific threads.
+This is likely only neccesary when we want the page to be in sync with the url.
+-}
+viewZettelRow : (String -> Message) -> List String -> Zettelkasten String String -> Html Message
+viewZettelRow onSnap ids zettelkasten =
     Html.div
-        [ Attribute.class "flex flex-row grow" ]
-        [ Html.button
-            [ Attribute.class "w-24 shrink-0"
-            , onScrollX Left
-                |> Maybe.map Events.onClick
-                |> Maybe.withDefault (Attribute.disabled True)
+        [ Attributes.class "flex flex-row grow" ]
+        [ SnapList.viewRow
+            [ Attributes.class "grow overflow-x-auto flex flex-row gap-24"
             ]
-            [ Html.text "<" ]
-        , Html.ul
-            [ Attribute.class "snap-x snap-mandatory grow overflow-x-auto flex flex-row gap-24"
-            ]
-            (List.concat
-                [ [ Html.li [ Attribute.class "snap-center w-1/2 -mr-72 shrink-0" ] [] ]
-                , List.map (\id -> viewZettel (id == focusId) zettelkasten id) ids
-                , [ Html.li [ Attribute.class "snap-center w-1/2 -ml-72 shrink-0" ] [] ]
-                ]
-            )
-        , Html.button
-            [ Attribute.class "w-24 shrink-0"
-            , onScrollX Right
-                |> Maybe.map Events.onClick
-                |> Maybe.withDefault (Attribute.disabled True)
-            ]
-            [ Html.text ">" ]
+            { onSnap = onSnap, items = ids, viewItem = viewZettel zettelkasten }
         ]
 
 
@@ -154,42 +154,16 @@ viewZettelkasten thread zettelkasten =
             Zettelkasten.getLinks thread.center zettelkasten
                 |> Set.toList
 
-        onScrollX : DirectionY -> List String -> String -> ScrollDirectionX -> Maybe Message
-        onScrollX row links focusId dirX =
-            Maybe.map (ThreadThing row) <|
-                case dirX of
-                    Left ->
-                        List.takeWhile (\id -> id /= focusId) links
-                            |> List.last
-
-                    Right ->
-                        List.dropWhile (\id -> id /= focusId) links
-                            |> List.tail
-                            |> Maybe.andThen List.head
-
-        viewRow : DirectionY -> List String -> Maybe String -> Html Message
-        viewRow row links focusId =
-            focusId
-                |> Maybe.map
-                    (\focusId_ ->
-                        viewZettelRow (onScrollX row links focusId_)
-                            links
-                            focusId_
-                            zettelkasten
-                    )
-                |> Maybe.withDefault (Html.text "")
+        parentLinks =
+            thread.top
+                |> Maybe.map (\id -> Zettelkasten.getLinks id zettelkasten |> Set.toList)
+                |> Maybe.withDefault [ thread.center ]
     in
     Html.ul
-        [ Attribute.class "flex flex-col justify-items-center gap-24 bg-zinc-700 h-full " ]
-        [ viewRow Top focusBacklinks thread.top
-        , Html.ul
-            [ Attribute.class "snap-x grow flex"
-            ]
-            [ Html.li [ Attribute.class "grow" ] []
-            , viewZettel True zettelkasten thread.center
-            , Html.li [ Attribute.class "grow" ] []
-            ]
-        , viewRow Bottom focusLinks thread.bottom
+        [ Attributes.class "flex flex-col justify-items-center gap-24 bg-zinc-700 h-full " ]
+        [ viewZettelRow (ThreadThing Top) focusBacklinks zettelkasten
+        , viewZettelRow SetFocus parentLinks zettelkasten
+        , viewZettelRow (ThreadThing Bottom) focusLinks zettelkasten
         ]
 
 
