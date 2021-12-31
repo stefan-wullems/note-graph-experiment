@@ -135,7 +135,7 @@ viewZettelRow onSnap ids zettelkasten =
     Html.div
         [ Attributes.class "flex flex-row grow" ]
         [ SnapList.viewRow
-            [ Attributes.class "grow overflow-x-auto flex flex-row gap-24"
+            [ Attributes.class "grow overflow-x-auto flex flex-row gap-24 snap-x snap-mandatory"
             ]
             { onSnap = onSnap, items = ids, viewItem = viewZettel zettelkasten }
         ]
@@ -153,16 +153,11 @@ viewZettelkasten thread zettelkasten =
         focusLinks =
             Zettelkasten.getLinks thread.center zettelkasten
                 |> Set.toList
-
-        parentLinks =
-            thread.top
-                |> Maybe.map (\id -> Zettelkasten.getLinks id zettelkasten |> Set.toList)
-                |> Maybe.withDefault [ thread.center ]
     in
     Html.ul
         [ Attributes.class "flex flex-col justify-items-center gap-24 bg-zinc-700 h-full " ]
         [ viewZettelRow (ThreadThing Top) focusBacklinks zettelkasten
-        , viewZettelRow SetFocus parentLinks zettelkasten
+        , viewZettelRow SetFocus [ thread.center ] zettelkasten
         , viewZettelRow (ThreadThing Bottom) focusLinks zettelkasten
         ]
 

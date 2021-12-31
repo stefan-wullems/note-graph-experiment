@@ -1,8 +1,9 @@
 module UI.SnapList exposing (SnapListConfig, viewCol, viewRow)
 
 import Html exposing (Attribute, Html)
-import Html.Events as Events
-import Json.Decode as JsonDecode
+import Html.Attributes
+import Html.Events
+import Json.Decode
 
 
 type alias SnapListConfig item msg =
@@ -31,21 +32,26 @@ viewSnapList : Direction -> List (Attribute msg) -> SnapListConfig item msg -> H
 viewSnapList direction attributes config =
     Html.node (getNode direction)
         attributes
-        (config.items
-            |> List.map
-                (\item ->
-                    Html.node "snap-item"
-                        [ Events.custom "snap"
-                            (JsonDecode.succeed
-                                { message = config.onSnap item
-                                , stopPropagation = True
-                                , preventDefault = False
-                                }
-                            )
-                        ]
-                        [ config.viewItem item
-                        ]
-                )
+        (List.concat
+            [ [ Html.node "snap-bound" [ Html.Attributes.class "w-1/2 -mr-72 shrink-0" ] [] ]
+            , config.items
+                |> List.map
+                    (\item ->
+                        Html.node "snap-item"
+                            [ Html.Events.custom "snap"
+                                (Json.Decode.succeed
+                                    { message = config.onSnap item
+                                    , stopPropagation = True
+                                    , preventDefault = False
+                                    }
+                                )
+                            , Html.Attributes.class "snap-center snap-always"
+                            ]
+                            [ config.viewItem item
+                            ]
+                    )
+            , [ Html.node "snap-bound" [ Html.Attributes.class "w-1/2 -ml-72 shrink-0" ] [] ]
+            ]
         )
 
 

@@ -4,6 +4,8 @@
     "elm:build": "elm make src/Main.elm --output=./dist/elm.js",
     "elm:review": "elm-review",
     "elm:test": "elm-test",
+    "tailwind": "tailwindcss -i ./style.css -o ./dist/style.css --watch",
+    "tailwind:snap": "tailwindcss -i ./style.css -o ./dist/style.css --watch",
     "start": "vite -c ./vite.config.js",
     "check": "npm run elm:build && npm run elm:review && npm run elm:test"
   },
