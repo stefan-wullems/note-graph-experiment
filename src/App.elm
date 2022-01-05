@@ -98,17 +98,6 @@ update msg ( thread, zettelkasten ) =
             )
 
 
-
--- List: snap-x snap-mandatory
--- Item: snap-center snap-always
--- (List.concat
---     [ [ Html.li [ Attributes.class "snap-center w-1/2 -mr-72 shrink-0" ] [] ]
---     , List.map (\id -> viewZettel (id == focusId) zettelkasten id) ids
---     , [ Html.li [ Attributes.class "snap-center w-1/2 -ml-72 shrink-0" ] [] ]
---     ]
--- )
-
-
 viewZettel : Zettelkasten String String -> String -> Html Message
 viewZettel zettelkasten id =
     Html.div
@@ -153,11 +142,23 @@ viewZettelkasten thread zettelkasten =
         focusLinks =
             Zettelkasten.getLinks thread.center zettelkasten
                 |> Set.toList
+
+        parentLinks =
+            thread.center
+                :: (thread.top
+                        |> Maybe.map
+                            (\id ->
+                                Zettelkasten.getLinks id zettelkasten
+                                    |> Set.remove thread.center
+                                    |> Set.toList
+                            )
+                        |> Maybe.withDefault []
+                   )
     in
     Html.ul
         [ Attributes.class "flex flex-col justify-items-center gap-24 bg-zinc-700 h-full " ]
         [ viewZettelRow (ThreadThing Top) focusBacklinks zettelkasten
-        , viewZettelRow SetFocus [ thread.center ] zettelkasten
+        , viewZettelRow SetFocus parentLinks zettelkasten
         , viewZettelRow (ThreadThing Bottom) focusLinks zettelkasten
         ]
 

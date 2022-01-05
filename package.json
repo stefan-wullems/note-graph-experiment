@@ -5,7 +5,7 @@
     "elm:review": "elm-review",
     "elm:test": "elm-test",
     "tailwind": "tailwindcss -i ./style.css -o ./dist/style.css --watch",
-    "tailwind:snap": "tailwindcss -i ./style.css -o ./dist/style.css --watch",
+    "tailwind:snap": "tailwindcss -i ./style.css -o ./dist/style.css --content ./src/UI/SnapList.js --watch",
     "start": "vite -c ./vite.config.js",
     "check": "npm run elm:build && npm run elm:review && npm run elm:test"
   },

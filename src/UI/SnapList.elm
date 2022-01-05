@@ -33,7 +33,7 @@ viewSnapList direction attributes config =
     Html.node (getNode direction)
         attributes
         (List.concat
-            [ [ Html.node "snap-bound" [ Html.Attributes.class "w-1/2 -mr-72 shrink-0" ] [] ]
+            [ [ Html.div [ Html.Attributes.class "w-1/2 -mr-72 shrink-0" ] [] ]
             , config.items
                 |> List.map
                     (\item ->
@@ -50,7 +50,7 @@ viewSnapList direction attributes config =
                             [ config.viewItem item
                             ]
                     )
-            , [ Html.node "snap-bound" [ Html.Attributes.class "w-1/2 -ml-72 shrink-0" ] [] ]
+            , [ Html.div [ Html.Attributes.class "w-1/2 -ml-72 shrink-0" ] [] ]
             ]
         )
 
