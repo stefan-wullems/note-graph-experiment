@@ -74,15 +74,34 @@ update : Message -> Model -> Model
 update msg ( thread, zettelkasten ) =
     case msg of
         SetFocus id ->
-            ( { top =
+            let
+                backlinks =
                     Zettelkasten.getBacklinks id zettelkasten
-                        |> Set.toList
-                        |> List.head
+
+                links =
+                    Zettelkasten.getLinks id zettelkasten
+            in
+            ( { top =
+                    thread.top
+                        |> Maybe.andThen
+                            (\top ->
+                                if List.member top backlinks then
+                                    Just top
+
+                                else
+                                    List.head backlinks
+                            )
               , center = id
               , bottom =
-                    Zettelkasten.getLinks id zettelkasten
-                        |> Set.toList
-                        |> List.head
+                    thread.bottom
+                        |> Maybe.andThen
+                            (\bottom ->
+                                if List.member bottom links then
+                                    Just bottom
+
+                                else
+                                    List.head links
+                            )
               }
             , zettelkasten
             )
@@ -106,7 +125,8 @@ viewZettel zettelkasten id =
         ]
         [ Html.div [ Attributes.class "px-3 py-4 sm:px-6" ]
             [ Html.h3 [ Attributes.class "text-lg leading-6 text-gray-900" ]
-                [ Html.text
+                [ Html.text (id ++ "     ")
+                , Html.text
                     (Zettelkasten.get id zettelkasten
                         |> Maybe.withDefault "ERROR"
                     )
@@ -119,14 +139,14 @@ viewZettel zettelkasten id =
 We only need to make it controlled when we want to support initialization with specific threads.
 This is likely only neccesary when we want the page to be in sync with the url.
 -}
-viewZettelRow : (String -> Message) -> List String -> Zettelkasten String String -> Html Message
-viewZettelRow onSnap ids zettelkasten =
+viewZettelRow : (String -> Message) -> Maybe String -> List String -> Zettelkasten String String -> Html Message
+viewZettelRow onSnap selectedId ids zettelkasten =
     Html.div
         [ Attributes.class "flex flex-row grow" ]
         [ SnapList.viewRow
             [ Attributes.class "grow overflow-x-auto flex flex-row gap-24 snap-x snap-mandatory"
             ]
-            { onSnap = onSnap, items = ids, viewItem = viewZettel zettelkasten }
+            { onSnap = onSnap, items = ids, isActive = \id -> Just id == selectedId, viewItem = viewZettel zettelkasten }
         ]
 
 
@@ -135,31 +155,23 @@ viewZettelkasten thread zettelkasten =
     let
         focusBacklinks : List String
         focusBacklinks =
-            Zettelkasten.getBacklinks thread.center zettelkasten
-                |> Set.toList
+            Debug.log "bla" (Zettelkasten.getBacklinks thread.center zettelkasten)
 
         focusLinks : List String
         focusLinks =
             Zettelkasten.getLinks thread.center zettelkasten
-                |> Set.toList
 
         parentLinks =
-            thread.center
-                :: (thread.top
-                        |> Maybe.map
-                            (\id ->
-                                Zettelkasten.getLinks id zettelkasten
-                                    |> Set.remove thread.center
-                                    |> Set.toList
-                            )
-                        |> Maybe.withDefault []
-                   )
+            thread.top
+                |> Maybe.map
+                    (\id -> Zettelkasten.getLinks id zettelkasten)
+                |> Maybe.withDefault [ thread.center ]
     in
     Html.ul
         [ Attributes.class "flex flex-col justify-items-center gap-24 bg-zinc-700 h-full " ]
-        [ viewZettelRow (ThreadThing Top) focusBacklinks zettelkasten
-        , viewZettelRow SetFocus parentLinks zettelkasten
-        , viewZettelRow (ThreadThing Bottom) focusLinks zettelkasten
+        [ viewZettelRow (ThreadThing Top) thread.top focusBacklinks zettelkasten
+        , viewZettelRow SetFocus (Just (Debug.log "blabla" thread.center)) parentLinks zettelkasten
+        , viewZettelRow (ThreadThing Bottom) thread.bottom focusLinks zettelkasten
         ]
 
 

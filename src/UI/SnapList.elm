@@ -4,11 +4,13 @@ import Html exposing (Attribute, Html)
 import Html.Attributes
 import Html.Events
 import Json.Decode
+import List.Extra as List
 
 
 type alias SnapListConfig item msg =
     { items : List item
     , viewItem : item -> Html msg
+    , isActive : item -> Bool
     , onSnap : item -> msg
     }
 
@@ -31,7 +33,26 @@ getNode direction =
 viewSnapList : Direction -> List (Attribute msg) -> SnapListConfig item msg -> Html msg
 viewSnapList direction attributes config =
     Html.node (getNode direction)
-        attributes
+        (attributes
+            ++ [ Html.Events.on "changeActiveIndex"
+                    (Json.Decode.at [ "target", "activeIndex" ] Json.Decode.int
+                        |> Json.Decode.andThen
+                            (\index ->
+                                case List.getAt (Debug.log "activeIndex" index) config.items of
+                                    Just item ->
+                                        Json.Decode.succeed (config.onSnap item)
+
+                                    Nothing ->
+                                        Json.Decode.fail "failed"
+                            )
+                    )
+               , Html.Attributes.attribute "activeIndex"
+                    (List.findIndex config.isActive config.items
+                        |> Maybe.withDefault -1
+                        |> String.fromInt
+                    )
+               ]
+        )
         (List.concat
             [ [ Html.div [ Html.Attributes.class "w-1/2 -mr-72 shrink-0" ] [] ]
             , config.items

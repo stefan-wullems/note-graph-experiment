@@ -6,24 +6,27 @@ import Set exposing (Set)
 
 type alias Zettel comparableId content =
     { content : content
-    , links : Set comparableId
-    , backlinks : Set comparableId
+    , links : List comparableId
+    , backlinks : List comparableId
     }
 
 
 makeZettel : content -> Zettel comparableId content
 makeZettel content =
-    { content = content, links = Set.empty, backlinks = Set.empty }
+    { content = content, links = [], backlinks = [] }
 
 
 addZettelLink : comparableId -> Zettel comparableId content -> Zettel comparableId content
 addZettelLink id zettel =
-    { zettel | links = Set.insert id zettel.links }
+    { zettel
+        | links =
+            zettel.links ++ [ id ]
+    }
 
 
 addZettelBacklink : comparableId -> Zettel comparableId content -> Zettel comparableId content
 addZettelBacklink id zettel =
-    { zettel | backlinks = Set.insert id zettel.backlinks }
+    { zettel | backlinks = zettel.backlinks ++ [ id ] }
 
 
 type Zettelkasten comparableId content
@@ -60,15 +63,15 @@ link srcId targetId (Zettelkasten zettelkasten) =
         )
 
 
-getLinks : comparableId -> Zettelkasten comparableId content -> Set comparableId
+getLinks : comparableId -> Zettelkasten comparableId content -> List comparableId
 getLinks id (Zettelkasten zettelkasten) =
     Dict.get id zettelkasten
         |> Maybe.map .links
-        |> Maybe.withDefault Set.empty
+        |> Maybe.withDefault []
 
 
-getBacklinks : comparableId -> Zettelkasten comparableId content -> Set comparableId
+getBacklinks : comparableId -> Zettelkasten comparableId content -> List comparableId
 getBacklinks id (Zettelkasten zettelkasten) =
     Dict.get id zettelkasten
         |> Maybe.map .backlinks
-        |> Maybe.withDefault Set.empty
+        |> Maybe.withDefault []

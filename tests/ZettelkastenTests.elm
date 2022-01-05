@@ -44,9 +44,9 @@ suite =
                     |> Zettelkasten.link "1" "3"
                     |> Zettelkasten.getLinks "1"
                     |> Expect.all
-                        [ Set.size >> Expect.equal 2
-                        , Set.member "2" >> Expect.true "\"two\" is a link"
-                        , Set.member "3" >> Expect.true "\"three\" is a link"
+                        [ List.length >> Expect.equal 2
+                        , List.member "2" >> Expect.true "\"two\" is a link"
+                        , List.member "3" >> Expect.true "\"three\" is a link"
                         ]
         , Test.test "I can retrieve all backlinks from a zettel" <|
             \_ ->
@@ -58,8 +58,8 @@ suite =
                     |> Zettelkasten.link "1" "3"
                     |> Zettelkasten.getBacklinks "3"
                     |> Expect.all
-                        [ Set.size >> Expect.equal 2
-                        , Set.member "1" >> Expect.true "\"one\" is a backlink"
-                        , Set.member "2" >> Expect.true "\"two\" is a backlink"
+                        [ List.length >> Expect.equal 2
+                        , List.member "1" >> Expect.true "\"one\" is a backlink"
+                        , List.member "2" >> Expect.true "\"two\" is a backlink"
                         ]
         ]
