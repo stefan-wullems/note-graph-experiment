@@ -1,7 +1,6 @@
 module Zettelkasten exposing (Zettelkasten, empty, get, getBacklinks, getLinks, insert, isEmpty, link)
 
 import Dict exposing (Dict)
-import Set exposing (Set)
 
 
 type alias Zettel comparableId content =

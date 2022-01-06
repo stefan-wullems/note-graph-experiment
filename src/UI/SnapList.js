@@ -1,9 +1,34 @@
-// Active should be the source of truth
+import Glider from 'glider-js'
+
+customElements.define('glider-thing', class extends HTMLElement {
+    constructor() {
+        super()
+
+        this.shadow = this.attachShadow({ mode: 'open' })
+        this.shadow.innerHTML = `
+            <slot class='glider' style='width: 100vw;'>
+             
+            </slot> 
+        `
+
+        console.log(this.children)
+
+        this._glider = new Glider(this.shadow.querySelector('.glider'))
+    }
+
+})
 
 customElements.define('snap-row', class extends HTMLElement {
 
+    constructor() {
+        super()
+        this.autoscrolling = false
+        this.manuallyScrolling = false
+    }
+
+
     static get observedAttributes() {
-        return ['activeIndex']
+        return ['activeindex']
     }
 
     get items() {
@@ -25,43 +50,57 @@ customElements.define('snap-row', class extends HTMLElement {
     }
 
     get activeIndex() {
-        return Number(this.getAttribute('activeIndex'))
+        return Number(this.getAttribute('activeindex'))
     }
 
     set activeIndex(val) {
-        this.setAttribute('activeIndex', String(val))
-        this.dispatchEvent(new CustomEvent('changeActiveIndex'))
-
+        if (!this.autoscrolling) {
+            this.setAttribute('activeindex', String(val))
+            this.dispatchEvent(new CustomEvent('changeActiveIndex'))
+        }
     }
 
     attributeChangedCallback(name, prevValue, value) {
         switch (name) {
-            case 'activeIndex': {
-                this.invalidateScroll()
+            case 'activeindex': {
+                if (!this.manuallyScrolling) {
+                    this.invalidateScroll()
+                }
             }
         }
     }
 
     invalidateScroll() {
-        console.log(this.items[this.activeIndex], this.activeIndex)
         const item = this.items[this.activeIndex]
-        console.log(item)
+
         if (item) {
             const rect = item.getBoundingClientRect()
-            console.log(rect.x)
-            this.scrollTo({ left: this.activeIndex * rect.x, behavior: 'smooth' })
+            this.autoscrolling = true
+            requestAnimationFrame(() => {
+                this.scrollTo({ left: this.activeIndex * rect.x, behavior: 'smooth' })
+                this.autoscrolling = false
+            })
+
         }
-
-
     }
 
     connectedCallback() {
+        let timer = null
         this.addEventListener('scroll', () => {
-            const currActiveIndex = this.calcActiveIndex()
-            if (currActiveIndex !== this.activeIndex) {
-                this.activeIndex = currActiveIndex
+            if (timer !== null) {
+                clearTimeout(timer)
             }
 
+            this.manuallyScrolling = true
+
+            timer = setTimeout(() => {
+                this.manuallyScrolling = false
+            }, 10)
+
+            const calculatedActiveIndex = this.calcActiveIndex()
+            if (calculatedActiveIndex !== this.activeIndex) {
+                this.activeIndex = calculatedActiveIndex
+            }
         }, false);
     }
 
@@ -69,7 +108,7 @@ customElements.define('snap-row', class extends HTMLElement {
 
 customElements.define('snap-item', class extends HTMLElement {
     connectedCallback() {
-        this.parentElement.invalidateScroll()
+        // this.parentElement.invalidateScroll()
     }
 })
 

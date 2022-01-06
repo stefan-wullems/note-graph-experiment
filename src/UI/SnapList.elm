@@ -1,4 +1,4 @@
-module UI.SnapList exposing (SnapListConfig, viewCol, viewRow)
+module UI.SnapList exposing (SnapListConfig, viewRow)
 
 import Html exposing (Attribute, Html)
 import Html.Attributes
@@ -17,28 +17,22 @@ type alias SnapListConfig item msg =
 
 type Direction
     = Row
-    | Column
 
 
 getNode : Direction -> String
-getNode direction =
-    case direction of
-        Row ->
-            "snap-row"
-
-        Column ->
-            "snap-col"
+getNode _ =
+    "snap-row"
 
 
 viewSnapList : Direction -> List (Attribute msg) -> SnapListConfig item msg -> Html msg
 viewSnapList direction attributes config =
-    Html.node (getNode direction)
+    Html.node "glider-thing"
         (attributes
             ++ [ Html.Events.on "changeActiveIndex"
                     (Json.Decode.at [ "target", "activeIndex" ] Json.Decode.int
                         |> Json.Decode.andThen
                             (\index ->
-                                case List.getAt (Debug.log "activeIndex" index) config.items of
+                                case List.getAt index config.items of
                                     Just item ->
                                         Json.Decode.succeed (config.onSnap item)
 
@@ -46,7 +40,7 @@ viewSnapList direction attributes config =
                                         Json.Decode.fail "failed"
                             )
                     )
-               , Html.Attributes.attribute "activeIndex"
+               , Html.Attributes.attribute "activeindex"
                     (List.findIndex config.isActive config.items
                         |> Maybe.withDefault -1
                         |> String.fromInt
@@ -79,8 +73,3 @@ viewSnapList direction attributes config =
 viewRow : List (Attribute msg) -> SnapListConfig item msg -> Html msg
 viewRow =
     viewSnapList Row
-
-
-viewCol : List (Attribute msg) -> SnapListConfig item msg -> Html msg
-viewCol =
-    viewSnapList Column

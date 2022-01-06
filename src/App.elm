@@ -2,10 +2,8 @@ module App exposing (Message, Model, Thread, main)
 
 import Browser
 import Html exposing (Html)
-import Html.Attributes as Attributes
+import Html.Attributes
 import Html.Events as Events
-import List.Extra as List
-import Set
 import UI.SnapList as SnapList
 import Zettelkasten exposing (Zettelkasten)
 
@@ -47,11 +45,6 @@ testZettelkasten =
         |> Zettelkasten.link "6" "15"
 
 
-type ScrollDirectionX
-    = Left
-    | Right
-
-
 type DirectionY
     = Top
     | Bottom
@@ -74,17 +67,15 @@ update : Message -> Model -> Model
 update msg ( thread, zettelkasten ) =
     case msg of
         SetFocus id ->
-            let
-                backlinks =
-                    Zettelkasten.getBacklinks id zettelkasten
-
-                links =
-                    Zettelkasten.getLinks id zettelkasten
-            in
             ( { top =
                     thread.top
                         |> Maybe.andThen
                             (\top ->
+                                let
+                                    backlinks : List String
+                                    backlinks =
+                                        Zettelkasten.getBacklinks id zettelkasten
+                                in
                                 if List.member top backlinks then
                                     Just top
 
@@ -96,6 +87,11 @@ update msg ( thread, zettelkasten ) =
                     thread.bottom
                         |> Maybe.andThen
                             (\bottom ->
+                                let
+                                    links : List String
+                                    links =
+                                        Zettelkasten.getLinks id zettelkasten
+                                in
                                 if List.member bottom links then
                                     Just bottom
 
@@ -120,11 +116,11 @@ update msg ( thread, zettelkasten ) =
 viewZettel : Zettelkasten String String -> String -> Html Message
 viewZettel zettelkasten id =
     Html.div
-        [ Attributes.class "w-96 text-center shrink-0 bg-orange-50 rounded-lg z-10"
+        [ Html.Attributes.class "w-96 text-center shrink-0 bg-orange-50 rounded-lg z-10"
         , Events.onClick (SetFocus id)
         ]
-        [ Html.div [ Attributes.class "px-3 py-4 sm:px-6" ]
-            [ Html.h3 [ Attributes.class "text-lg leading-6 text-gray-900" ]
+        [ Html.div [ Html.Attributes.class "px-3 py-4 sm:px-6" ]
+            [ Html.h3 [ Html.Attributes.class "text-lg leading-6 text-gray-900" ]
                 [ Html.text (id ++ "     ")
                 , Html.text
                     (Zettelkasten.get id zettelkasten
@@ -139,13 +135,20 @@ viewZettel zettelkasten id =
 We only need to make it controlled when we want to support initialization with specific threads.
 This is likely only neccesary when we want the page to be in sync with the url.
 -}
-viewZettelRow : (String -> Message) -> Maybe String -> List String -> Zettelkasten String String -> Html Message
-viewZettelRow onSnap selectedId ids zettelkasten =
+viewZettelRow : Bool -> (String -> Message) -> Maybe String -> List String -> Zettelkasten String String -> Html Message
+viewZettelRow debug onSnap selectedId ids zettelkasten =
     Html.div
-        [ Attributes.class "flex flex-row grow" ]
+        [ Html.Attributes.class "flex flex-row grow" ]
         [ SnapList.viewRow
-            [ Attributes.class "grow overflow-x-auto flex flex-row gap-24 snap-x snap-mandatory"
-            ]
+            ([ Html.Attributes.class "grow overflow-x-auto flex flex-row h-72 gap-24"
+             ]
+                ++ (if debug then
+                        [ Html.Attributes.attribute "log" "true" ]
+
+                    else
+                        []
+                   )
+            )
             { onSnap = onSnap, items = ids, isActive = \id -> Just id == selectedId, viewItem = viewZettel zettelkasten }
         ]
 
@@ -155,12 +158,13 @@ viewZettelkasten thread zettelkasten =
     let
         focusBacklinks : List String
         focusBacklinks =
-            Debug.log "bla" (Zettelkasten.getBacklinks thread.center zettelkasten)
+            Zettelkasten.getBacklinks thread.center zettelkasten
 
         focusLinks : List String
         focusLinks =
             Zettelkasten.getLinks thread.center zettelkasten
 
+        parentLinks : List String
         parentLinks =
             thread.top
                 |> Maybe.map
@@ -168,10 +172,10 @@ viewZettelkasten thread zettelkasten =
                 |> Maybe.withDefault [ thread.center ]
     in
     Html.ul
-        [ Attributes.class "flex flex-col justify-items-center gap-24 bg-zinc-700 h-full " ]
-        [ viewZettelRow (ThreadThing Top) thread.top focusBacklinks zettelkasten
-        , viewZettelRow SetFocus (Just (Debug.log "blabla" thread.center)) parentLinks zettelkasten
-        , viewZettelRow (ThreadThing Bottom) thread.bottom focusLinks zettelkasten
+        [ Html.Attributes.class "flex flex-col justify-items-center gap-24 bg-zinc-700 h-full " ]
+        [ viewZettelRow False (ThreadThing Top) thread.top focusBacklinks zettelkasten
+        , viewZettelRow True SetFocus (Just thread.center) parentLinks zettelkasten
+        , viewZettelRow False (ThreadThing Bottom) thread.bottom focusLinks zettelkasten
         ]
 
 

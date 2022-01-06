@@ -1,7 +1,6 @@
 module ZettelkastenTests exposing (suite)
 
 import Expect
-import Set
 import Test exposing (Test)
 import Zettelkasten
 
