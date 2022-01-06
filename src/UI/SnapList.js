@@ -1,22 +1,4 @@
-import Glider from 'glider-js'
 
-customElements.define('glider-thing', class extends HTMLElement {
-    constructor() {
-        super()
-
-        this.shadow = this.attachShadow({ mode: 'open' })
-        this.shadow.innerHTML = `
-            <slot class='glider' style='width: 100vw;'>
-             
-            </slot> 
-        `
-
-        console.log(this.children)
-
-        this._glider = new Glider(this.shadow.querySelector('.glider'))
-    }
-
-})
 
 customElements.define('snap-row', class extends HTMLElement {
 
