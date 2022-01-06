@@ -57,7 +57,7 @@ export class MyElement extends LitElement {
    * @param name The name to say "Hello" to
    */
   sayHello(name: string): string {
-    return `Hello there, ${name}`;
+    return `Hello, ${name}`;
   }
 }
 

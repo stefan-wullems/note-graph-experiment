@@ -4,8 +4,9 @@
   "description": "UI primitives built with webcomponents",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
+    "preview:build": "tsc --project=tsconfig.json",
+    "preview:build:watch": "tsc --project=tsconfig.json --watch",
+    "preview:serve": "wds --root-dir ./preview --watch",
     "clean": "rimraf my-element.{d.ts,d.ts.map,js,js.map} test/my-element.{d.ts,d.ts.map,js,js.map} test/my-element_test.{d.ts,d.ts.map,js,js.map}",
     "lint": "npm run lint:lit-analyzer && npm run lint:eslint",
     "lint:eslint": "eslint 'src/**/*.ts'",

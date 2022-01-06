@@ -11,7 +11,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "inlineSources": true,
-    "outDir": "./preview",
+    "outDir": "./preview/dist",
     "rootDir": "./src",
     "strict": true,
     "noUnusedLocals": true,
@@ -35,7 +35,5 @@
   "include": [
     "src/**/*.ts"
   ],
-  "exclude": [
-    "src/**/*_test.ts"
-  ]
+  "exclude": []
 }
