@@ -12,7 +12,7 @@ export default defineConfig({
     // configure our build
     build: {
         // file path for the build output directory
-        outDir: "../../dist",
+        outDir: "../dist",
         // esbuild target
         target: "es2020"
     }

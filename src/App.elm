@@ -135,20 +135,13 @@ viewZettel zettelkasten id =
 We only need to make it controlled when we want to support initialization with specific threads.
 This is likely only neccesary when we want the page to be in sync with the url.
 -}
-viewZettelRow : Bool -> (String -> Message) -> Maybe String -> List String -> Zettelkasten String String -> Html Message
-viewZettelRow debug onSnap selectedId ids zettelkasten =
+viewZettelRow : (String -> Message) -> Maybe String -> List String -> Zettelkasten String String -> Html Message
+viewZettelRow onSnap selectedId ids zettelkasten =
     Html.div
         [ Html.Attributes.class "flex flex-row grow" ]
         [ SnapList.viewRow
-            ([ Html.Attributes.class "grow overflow-x-auto flex flex-row h-72 gap-24"
-             ]
-                ++ (if debug then
-                        [ Html.Attributes.attribute "log" "true" ]
-
-                    else
-                        []
-                   )
-            )
+            [ Html.Attributes.class "grow"
+            ]
             { onSnap = onSnap, items = ids, isActive = \id -> Just id == selectedId, viewItem = viewZettel zettelkasten }
         ]
 
@@ -173,9 +166,9 @@ viewZettelkasten thread zettelkasten =
     in
     Html.ul
         [ Html.Attributes.class "flex flex-col justify-items-center gap-24 bg-zinc-700 h-full " ]
-        [ viewZettelRow False (ThreadThing Top) thread.top focusBacklinks zettelkasten
-        , viewZettelRow True SetFocus (Just thread.center) parentLinks zettelkasten
-        , viewZettelRow False (ThreadThing Bottom) thread.bottom focusLinks zettelkasten
+        [ viewZettelRow (ThreadThing Top) thread.top focusBacklinks zettelkasten
+        , viewZettelRow SetFocus (Just thread.center) parentLinks zettelkasten
+        , viewZettelRow (ThreadThing Bottom) thread.bottom focusLinks zettelkasten
         ]
 
 

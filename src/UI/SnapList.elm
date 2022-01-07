@@ -26,7 +26,7 @@ getNode _ =
 
 viewSnapList : Direction -> List (Attribute msg) -> SnapListConfig item msg -> Html msg
 viewSnapList direction attributes config =
-    Html.node "glider-thing"
+    Html.node "horizontal-glider"
         (attributes
             ++ [ Html.Events.on "changeActiveIndex"
                     (Json.Decode.at [ "target", "activeIndex" ] Json.Decode.int
@@ -47,26 +47,13 @@ viewSnapList direction attributes config =
                     )
                ]
         )
-        (List.concat
-            [ [ Html.div [ Html.Attributes.class "w-1/2 -mr-72 shrink-0" ] [] ]
-            , config.items
-                |> List.map
-                    (\item ->
-                        Html.node "snap-item"
-                            [ Html.Events.custom "snap"
-                                (Json.Decode.succeed
-                                    { message = config.onSnap item
-                                    , stopPropagation = True
-                                    , preventDefault = False
-                                    }
-                                )
-                            , Html.Attributes.class "snap-center snap-always"
-                            ]
-                            [ config.viewItem item
-                            ]
-                    )
-            , [ Html.div [ Html.Attributes.class "w-1/2 -ml-72 shrink-0" ] [] ]
-            ]
+        (config.items
+            |> List.indexedMap
+                (\index item ->
+                    Html.node "glider-item"
+                        [ Html.Attributes.attribute "slot" ("slide" ++ String.fromInt index) ]
+                        [ config.viewItem item ]
+                )
         )
 
 
