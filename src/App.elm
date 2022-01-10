@@ -165,7 +165,7 @@ viewZettelkasten thread zettelkasten =
                 |> Maybe.withDefault [ thread.center ]
     in
     Html.ul
-        [ Html.Attributes.class "flex flex-col justify-items-center gap-24 bg-zinc-700 h-full " ]
+        [ Html.Attributes.class "flex flex-col justify-items-center gap-24 bg-zinc-700 h-full" ]
         [ viewZettelRow (ThreadThing Top) thread.top focusBacklinks zettelkasten
         , viewZettelRow SetFocus (Just thread.center) parentLinks zettelkasten
         , viewZettelRow (ThreadThing Bottom) thread.bottom focusLinks zettelkasten
